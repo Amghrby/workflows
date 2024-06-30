@@ -17,22 +17,15 @@ class ProcessWorkflow implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $model;
-    protected $dataBus;
-    protected $trigger;
-    protected $log;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(Model $model, DataBus $dataBus, Trigger $trigger, WorkflowLog $log)
+    public function __construct(protected Model $model, protected DataBus $dataBus, protected Trigger $trigger, protected WorkflowLog $log)
     {
-        $this->model = $model;
-        $this->dataBus = $dataBus;
-        $this->trigger = $trigger;
-        $this->log = $log;
+
     }
 
     /**
@@ -40,7 +33,7 @@ class ProcessWorkflow implements ShouldQueue
      *
      * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         DB::beginTransaction();
         try {

@@ -4,5 +4,5 @@ namespace Amghrby\Workflows\Fields;
 
 interface FieldInterface
 {
-    public function render($element, $value, $field);
+    public function get($element, $value, $field);
 }

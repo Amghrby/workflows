@@ -12,7 +12,7 @@ class ModelResource implements Resource
         return $model->{$value};
     }
 
-    public static function getValues(Model $element, $value, $field_name)
+    public static function getValues(Model $element, $value, $field_name): array
     {
         $classes = [];
         foreach ($element->workflow->triggers as $trigger) {
@@ -32,26 +32,23 @@ class ModelResource implements Resource
         return $variables;
     }
 
-    public static function checkCondition(Model $element, DataBus $dataBus, string $field, string $operator, string $value)
+    public static function checkCondition(Model $element, DataBus $dataBus, string $field, string $operator, string $value): bool
     {
-        switch ($operator) {
-            case 'equal':
-                return $element->{$field} == $value;
-            case 'not_equal':
-                return $element->{$field} != $value;
-            default:
-                return true;
-        }
+        return match ($operator) {
+            'equal' => $element->{$field} == $value,
+            'not_equal' => $element->{$field} != $value,
+            default => true,
+        };
     }
 
-    public static function loadResourceIntelligence(Model $element, $value, $field_name)
+    public static function loadResourceIntelligence(Model $element, $value, $field_name): array
     {
         $variables = self::getValues($element, $value, $field_name);
 
-        return view('workflows::fields.data_bus_resource_field', [
+        return [
             'fields' => $variables,
             'value' => $value,
             'field' => $field_name,
-        ])->render();
+        ];
     }
 }

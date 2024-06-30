@@ -2,6 +2,7 @@
 
 namespace Amghrby\Workflows\Triggers;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Arr;
@@ -17,9 +18,7 @@ class Trigger extends Model
 
     protected $table = 'triggers';
 
-    public $family = 'trigger';
-
-    public static $icon = '<i class="fas fa-question"></i>';
+    public string $family = 'trigger';
 
     protected $fillable = [
         'workflow_id',
@@ -32,9 +31,9 @@ class Trigger extends Model
         'pos_y',
     ];
 
-    public static $output = [];
-    public static $fields = [];
-    public static $fields_definitions = [];
+    public static array $output = [];
+    public static array $fields = [];
+    public static array $fields_definitions = [];
 
     protected $casts = [
         'data_fields' => 'array',
@@ -60,9 +59,8 @@ class Trigger extends Model
      *
      * @param  array  $attributes
      * @param  null  $connection
-     * @return \App\Models\Action
      */
-    public function newFromBuilder($attributes = [], $connection = null): Trigger|\App\Models\Action
+    public function newFromBuilder($attributes = [], $connection = null): Trigger
     {
         $entryClassName = '\\'.Arr::get((array) $attributes, 'type');
 
@@ -88,7 +86,7 @@ class Trigger extends Model
 
         try {
             $this->checkConditions($model, $dataBus);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->setError($e->getMessage(), $dataBus);
             exit;
         }
@@ -96,9 +94,12 @@ class Trigger extends Model
         ProcessWorkflow::dispatch($model, $dataBus, $this, $log);
     }
 
+
+    /**
+     * @throws Exception
+     */
     public function checkConditions(Model $model, DataBus $data): bool
     {
-        //TODO: This needs to get smoother :(
         if (empty($this->conditions)) {
             return true;
         }
@@ -106,36 +107,22 @@ class Trigger extends Model
         $conditions = json_decode($this->conditions);
 
         foreach ($conditions->rules as $rule) {
-            $ruleDetails = explode('-', $rule->id);
-            $DataBus = $ruleDetails[0];
-            $field = $ruleDetails[1];
+            [$DataBus, $field] = explode('-', $rule->id);
 
-            $result = config('workflows.data_resources')[$DataBus]::checkCondition($model, $data, $field, $rule->operator, $rule->value);
+            $result = $this->checkRule($model, $data, $DataBus, $field, $rule->operator, $rule->value);
 
             if (! $result) {
-                throw new \Exception('The Condition for Task '.$this->name.' with the field '.$rule->field.' '.$rule->operator.' '.$rule->value.' failed.');
+                throw new Exception("The Condition for Task {$this->name} with the field {$rule->field} {$rule->operator} {$rule->value} failed.");
             }
         }
 
         return true;
     }
 
-    public function getSettings()
+    private function checkRule(Model $model, DataBus $data, string $DataBus, string $field, string $operator, $value): bool
     {
-        return view('workflows::layouts.settings_overlay', [
-            'element' => $this,
-        ]);
-    }
+        $checkCondition = config('workflows.data_resources')[$DataBus]::checkCondition;
 
-    public static function getTranslation(): string
-    {
-        return __(static::getTranslationKey());
-    }
-
-    public static function getTranslationKey(): string
-    {
-        $className = (new \ReflectionClass(new static))->getShortName();
-
-        return "workflows::workflows.Elements.{$className}";
+        return $checkCondition($model, $data, $field, $operator, $value);
     }
 }

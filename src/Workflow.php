@@ -5,6 +5,7 @@ namespace Amghrby\Workflows;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Amghrby\Workflows\Triggers\Trigger;
+use Amghrby\Workflows\Loggers\WorkflowLog;
 
 class Workflow extends Model
 {
@@ -34,7 +35,7 @@ class Workflow extends Model
 
     public function logs(): HasMany
     {
-        return $this->hasMany('Amghrby\Workflows\Loggers\WorkflowLog');
+        return $this->hasMany(WorkflowLog::class);
     }
 
     public function getTriggerByClass($class): Model|HasMany|null

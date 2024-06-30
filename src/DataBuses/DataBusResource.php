@@ -28,14 +28,14 @@ class DataBusResource implements Resource
         return $element->getParentDataBusKeys();
     }
 
-    public static function loadResourceIntelligence(Model $element, $value, $field)
+    public static function loadResourceIntelligence(Model $element, $value, $field): array
     {
         $fields = self::getValues($element, $value, $field);
 
-        return view('workflows::fields.data_bus_resource_field', [
+        return [
             'fields' => $fields,
             'value' => $value,
             'field' => $field,
-        ])->render();
+        ];
     }
 }

@@ -2,11 +2,14 @@
 
 namespace Amghrby\Workflows\DataBuses;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Amghrby\Workflows\Workflow;
+
 trait DataBussable
 {
-    public function workflow()
+    public function workflow(): BelongsTo
     {
-        return $this->belongsTo('Amghrby\Workflows\Workflow');
+        return $this->belongsTo(Workflow::class);
     }
 
     public function getParentDataBusKeys($passedFields = [])
@@ -14,9 +17,6 @@ trait DataBussable
         $newFields = $passedFields;
 
         if (! empty($this->parentable)) {
-            //foreach($this->parentable::$fields as $key => $value){
-            //    $newFields[$key] = $this->parentable->name.' - '.$value;
-            //}
             foreach ($this->parentable::$output as $key => $value) {
                 $newFields[$this->parentable->name.' - '.$key.' - '.$this->parentable->getFieldValue($value)] = $this->parentable->getFieldValue($value);
             }

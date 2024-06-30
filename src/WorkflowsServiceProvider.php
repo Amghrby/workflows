@@ -11,7 +11,7 @@ class WorkflowsServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         // Register package services
     }

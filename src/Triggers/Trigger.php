@@ -96,6 +96,11 @@ class Trigger extends Model
 
 
     /**
+     * Check if all Conditions for this Action pass.
+     *
+     * @param Model $model
+     * @param DataBus $data
+     * @return bool
      * @throws Exception
      */
     public function checkConditions(Model $model, DataBus $data): bool

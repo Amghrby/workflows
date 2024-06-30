@@ -128,4 +128,38 @@ class WorkflowController extends Controller
             return response()->json(['error' => 'Could not delete workflow.'], 500);
         }
     }
+
+    public function addTrigger($id, Request $request)
+    {
+
+
+        try {
+            $workflow = Workflow::findOrFail($id);
+
+            if (array_key_exists($request->name, config('workflows.triggers.types'))) {
+                $trigger = config('workflows.triggers.types')[$request->name]::create([
+                    'type' => config('workflows.triggers.types')[$request->name],
+                    'workflow_id' => $workflow->id,
+                    'name' => $request->name,
+                    'data_fields' => null,
+                ]);
+
+                return response()->json(
+                    [
+                        'message' => 'Trigger created successfully',
+                        'trigger' => $trigger,
+                    ],
+                    201,
+                );
+            }
+
+            return response()->json(['error' => 'Trigger type not found.'], 404);
+        } catch (ModelNotFoundException $e) {
+            Log::error($e->getMessage());
+            return response()->json(['error' => self::WORKFLOW_NOT_FOUND_MESSAGE], 404);
+        } catch (\Exception $e) {
+            Log::error('Failed to attach trigger to workflow.' . $e->getMessage() .' '. $e->getTraceAsString());
+            return response()->json(['error' => 'Could not attach trigger to workflow.'], 500);
+        }
+    }
 }
